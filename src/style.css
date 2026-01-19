@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .service-card-shadow {
+    @apply shadow-[0px_4px_20px_rgba(44,182,125,0.08)];
+  }
+
+  .service-card-hover {
+    @apply transition-all duration-300 cursor-pointer;
+  }
+
+  .service-card-hover:hover {
+    @apply shadow-[0px_10px_30px_rgba(44,182,125,0.12)] -translate-y-1;
+  }
+
+  .verified-badge {
+    @apply bg-gradient-to-r from-primary to-primary-dark;
+  }
+
+  .blob-shape {
+    border-radius: 45% 55% 60% 40% / 55% 45% 40% 60%;
+  }
+}
