@@ -76,7 +76,7 @@ export default {
     methods: {
         searchServices() {
             console.log(`Searching for: ${this.service} in ${this.location}`);
-            // Navigate to search results or handle search
+            
         }
     }
 }

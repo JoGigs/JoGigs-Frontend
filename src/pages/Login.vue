@@ -71,6 +71,7 @@
 </template>
 
 <script>
+import { signIn } from '../api/auth.api';
 export default {
     name: 'Login',
     data() {
@@ -88,7 +89,7 @@ export default {
         }
     },
     methods: {
-        handleLogin() {
+     async   handleLogin() {
             this.errors = { email: '', password: '' }
 
             if (!this.form.email) {
@@ -99,16 +100,38 @@ export default {
                 this.errors.password = 'Password is required'
                 return
             }
+            
+             try {
+                this.isLoading = true;
 
-            this.isLoading = true
-            // Simulate API call
-            setTimeout(() => {
-                this.isLoading = false
-                // Store auth state (implement with proper auth)
-                console.log('Login attempt:', this.form.email)
-                // Redirect to home
-                this.$router.push('/')
-            }, 1500)
+                const data = await signIn({
+                    email: this.form.email,
+                    password: this.form.password
+                });
+
+                console.log("Login success:", data);
+                localStorage.setItem("loggedIn", "true");
+                this.$router.push('/');
+
+
+                
+                
+
+            } catch (error) {
+                console.error("Login failed:", error);
+
+                if (error.response?.status === 400) {
+                    this.errors.email = "User does not exist";
+                } else if (error.response?.status === 403) {
+                    this.errors.password = "Incorrect password";
+                } else {
+                    this.errors.email = "Login failed. Try again.";
+                }
+            } finally {
+                this.isLoading = false;
+            } 
+            
+            
         }
     }
 }

@@ -41,9 +41,11 @@ export default {
     },
     methods: {
         selectService(service) {
-            console.log(`Selected service: ${service.name}`);
-            // Navigate to service listings
-        }
+  console.log("clicked", service.name)
+  console.log(this.$router)
+  this.$router.push(`/services/${service.name.toLowerCase()}`)
+}
+
     }
 }
 </script>

@@ -4,6 +4,7 @@ import Login from "../pages/Login.vue";
 import Signup from "../pages/Signup.vue";
 import ForgotPassword from "../pages/ForgotPassword.vue";
 import CreateService from "../pages/CreateService.vue";
+import ServiceCategory from "../pages/ServiceCategory.vue";
 
 const routes = [
   {
@@ -31,6 +32,13 @@ const routes = [
     name: "CreateService",
     component: CreateService,
   },
+  {
+   path: "/services/:category",
+   name: "ServiceCategory",
+   component: ServiceCategory,
+  },
+
+
 ];
 
 const router = createRouter({

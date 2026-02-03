@@ -112,82 +112,81 @@
 </template>
 
 <script>
+import { signUp } from '../api/auth.api';
+
 export default {
-    name: 'Signup',
-    data() {
-        return {
-            accountTypes: [
-                { value: 'customer', label: 'Customer', icon: 'person' },
-                { value: 'professional', label: 'Professional', icon: 'verified' }
-            ],
-            form: {
-                accountType: 'customer',
-                fullName: '',
-                email: '',
-                phone: '',
-                password: '',
-                confirmPassword: '',
-                agreeTerms: false
-            },
-            errors: {
-                fullName: '',
-                email: '',
-                phone: '',
-                password: '',
-                confirmPassword: ''
-            },
-            isLoading: false
-        }
-    },
-    methods: {
-        handleSignup() {
-            this.errors = {
-                fullName: '',
-                email: '',
-                phone: '',
-                password: '',
-                confirmPassword: ''
-            }
+  name: 'Signup',
+  data() {
+    return {
+      isLoading: false,
+      form: {
+        fullName: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+        accountType: "customer",
+        agreeTerms: false
+      },
+      errors: {
+        fullName: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: ""
+      },
+      accountTypes: [
+        { label: "Customer", value: "customer", icon: "person" },
+        { label: "Professional", value: "professional", icon: "handyman" }
+      ]
+    };
+  },
+  methods: {
+    async handleSignup() {
+      // 1. Reset error messages
+      this.errors = { fullName: '', email: '', phone: '', password: '', confirmPassword: '' };
 
-            // Validation
-            if (!this.form.fullName.trim()) {
-                this.errors.fullName = 'Full name is required'
-                return
-            }
-            if (!this.form.email) {
-                this.errors.email = 'Email is required'
-                return
-            }
-            if (!this.form.phone) {
-                this.errors.phone = 'Phone number is required'
-                return
-            }
-            if (this.form.password.length < 8) {
-                this.errors.password = 'Password must be at least 8 characters'
-                return
-            }
-            if (this.form.password !== this.form.confirmPassword) {
-                this.errors.confirmPassword = 'Passwords do not match'
-                return
-            }
-            if (!this.form.agreeTerms) {
-                alert('Please agree to the terms and conditions')
-                return
-            }
+      // 2. Client-side Validation
+      if (this.form.password !== this.form.confirmPassword) {
+        this.errors.confirmPassword = 'Passwords do not match';
+        return;
+      }
+      
+      if (!this.form.agreeTerms) {
+        alert("Please agree to the terms and conditions");
+        return;
+      }
 
-            this.isLoading = true
-            // Simulate API call
-            setTimeout(() => {
-                this.isLoading = false
-                console.log('Signup attempt:', {
-                    type: this.form.accountType,
-                    email: this.form.email,
-                    name: this.form.fullName
-                })
-                // Redirect to home
-                this.$router.push('/')
-            }, 1500)
+      try {
+        this.isLoading = true;
+
+        
+        await signUp({
+          fullName: this.form.fullName,
+          email: this.form.email,
+          phone: this.form.phone,
+          password: this.form.password,
+          accountType: this.form.accountType 
+        });
+
+        
+        alert('Account created! Redirecting to login...');
+        this.$router.push('/login');
+
+      } catch (error) {
+        console.error("Signup error details:", error.response?.data);
+        
+        
+        if (error.response?.status === 400) {
+          
+          this.errors.email = error.response.data.message || "Email already in use";
+        } else {
+          alert("Registration failed. Check your connection and try again.");
         }
+      } finally {
+        this.isLoading = false;
+      }
     }
-}
+  }
+};
 </script>
