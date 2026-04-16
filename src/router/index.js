@@ -5,6 +5,8 @@ import Signup from "../pages/Signup.vue";
 import ForgotPassword from "../pages/ForgotPassword.vue";
 import CreateService from "../pages/CreateService.vue";
 import ServiceCategory from "../pages/ServiceCategory.vue";
+import ProviderProfile from "../pages/ProviderProfile.vue";
+import ChatWindow from "../pages/ChatWindow.vue";
 
 const routes = [
   {
@@ -37,8 +39,16 @@ const routes = [
    name: "ServiceCategory",
    component: ServiceCategory,
   },
-
-
+  {
+    path: "/provider/:id",
+    name: "ProviderProfile",
+    component: ProviderProfile,
+  },
+  {
+    path: "/chat/:id",
+    name: "ChatWindow",
+    component: ChatWindow,
+  },
 ];
 
 const router = createRouter({

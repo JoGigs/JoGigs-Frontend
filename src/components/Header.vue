@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { logout } from "../api/auth.api";
+import { logout } from "../services/auth.service";
 
 export default {
   name: "Header",

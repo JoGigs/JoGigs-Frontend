@@ -71,7 +71,7 @@
 </template>
 
 <script>
-import { signIn } from '../api/auth.api';
+import { signIn } from '../services/auth.service';
 export default {
     name: 'Login',
     data() {

@@ -112,7 +112,7 @@
 </template>
 
 <script>
-import { signUp } from '../api/auth.api';
+import { signUp } from '../services/auth.service';
 
 export default {
   name: 'Signup',
