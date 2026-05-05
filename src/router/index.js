@@ -7,6 +7,7 @@ import CreateService from "../pages/CreateService.vue";
 import ServiceCategory from "../pages/ServiceCategory.vue";
 import ProviderProfile from "../pages/ProviderProfile.vue";
 import ChatWindow from "../pages/ChatWindow.vue";
+import Dashboard from "../pages/Dashboard.vue";
 
 const routes = [
   {
@@ -35,9 +36,9 @@ const routes = [
     component: CreateService,
   },
   {
-   path: "/services/:category",
-   name: "ServiceCategory",
-   component: ServiceCategory,
+    path: "/services/:category",
+    name: "ServiceCategory",
+    component: ServiceCategory,
   },
   {
     path: "/provider/:id",
@@ -49,6 +50,12 @@ const routes = [
     name: "ChatWindow",
     component: ChatWindow,
   },
+  {
+  path: "/dashboard",
+  name: "Dashboard",
+  component: Dashboard,
+  }
+ 
 ];
 
 const router = createRouter({

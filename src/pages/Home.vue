@@ -2,10 +2,8 @@
     <div class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 min-h-screen">
         <Header />
         <main class="max-w-7xl mx-auto px-6 py-8">
-            <HeroSection />
             <PopularServices />
             <TopRatedNeighbors />
-            <JoinSection />
         </main>
         <Footer />
     </div>

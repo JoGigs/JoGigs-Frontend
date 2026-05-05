@@ -201,8 +201,8 @@ export default {
                 { value: 'handyman', label: 'Handyman', icon: 'handyman' }
             ],
             areas: [
-                'Abdoun', 'Jabal Amman', 'Khalda', 'Sweifieh',
-                'Tla\'a Al-Ali', 'Dabouq', 'Zarqa', 'Irbid'
+                'Amman', 'Irbid', 'Mafraq', 'Zarqa'
+                
             ],
             form: {
                 category: '',
