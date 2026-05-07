@@ -1,21 +1,25 @@
 import { io } from "socket.io-client";
 
-// ── Singleton socket instance ────────────────────────────────────────────────
-// The socket is lazily created the first time connect() is called.
-// The browser automatically sends the HttpOnly access_token cookie on
-// the WebSocket handshake — no manual auth header needed.
-
+// ── Singleton socket instance ─────────────────────────────────────────────────
+// Created once on first connect(). Never replaced — Socket.IO's built-in
+// reconnection logic keeps it alive across temporary disconnects.
 let socket = null;
 
 /**
  * Connect to the /chat namespace.
- * Safe to call multiple times — returns the existing socket if already open.
+ * Safe to call multiple times — returns the existing socket if already created,
+ * even if it is temporarily disconnected (let Socket.IO handle reconnection).
+ *
+ * @returns {import("socket.io-client").Socket}
  */
 export const connect = () => {
-  if (socket?.connected) return socket;
+  // KEY FIX: only return early if socket already EXISTS (not just if connected).
+  // Previously: `socket?.connected` — this caused a brand-new socket to be
+  // created whenever the connection dropped, orphaning all registered listeners.
+  if (socket) return socket;
 
   socket = io("http://localhost:3000/chat", {
-    withCredentials: true, // sends HttpOnly cookies on handshake
+    withCredentials: true,      // sends HttpOnly cookies on handshake
     transports: ["websocket"],
     reconnectionAttempts: 5,
     reconnectionDelay: 2000,
@@ -38,7 +42,7 @@ export const connect = () => {
 
 /**
  * Disconnect and destroy the socket instance.
- * Call this when the user logs out or leaves the chat area entirely.
+ * Call this only when the user logs out or leaves the chat area entirely.
  */
 export const disconnect = () => {
   if (socket) {
@@ -73,14 +77,19 @@ export const getConversationList = () => {
   getSocket().emit("getConversationList");
 };
 
-// ── Event listeners ──────────────────────────────────────────────────────────
+// ── Event listeners ───────────────────────────────────────────────────────────
+// Each listener calls .off() before .on() to prevent duplicate handlers.
+// This is safe even on first call because .off() on a non-existent handler
+// is a no-op in Socket.IO.
 
 /**
  * Listen for confirmation that a sent message was saved by the server.
  * @param {Function} callback - Receives the saved Message object.
  */
 export const onMessageSent = (callback) => {
-  getSocket().on("messageSent", callback);
+  const s = getSocket();
+  s.off("messageSent");
+  s.on("messageSent", callback);
 };
 
 /**
@@ -88,7 +97,9 @@ export const onMessageSent = (callback) => {
  * @param {Function} callback - Receives the incoming Message object.
  */
 export const onNewMessage = (callback) => {
-  getSocket().on("newMessage", callback);
+  const s = getSocket();
+  s.off("newMessage");
+  s.on("newMessage", callback);
 };
 
 /**
@@ -96,7 +107,9 @@ export const onNewMessage = (callback) => {
  * @param {Function} callback - Receives Message[].
  */
 export const onConversationHistory = (callback) => {
-  getSocket().on("conversationHistory", callback);
+  const s = getSocket();
+  s.off("conversationHistory");
+  s.on("conversationHistory", callback);
 };
 
 /**
@@ -104,7 +117,9 @@ export const onConversationHistory = (callback) => {
  * @param {Function} callback - Receives Message[] (one per conversation).
  */
 export const onConversationList = (callback) => {
-  getSocket().on("conversationList", callback);
+  const s = getSocket();
+  s.off("conversationList");
+  s.on("conversationList", callback);
 };
 
 /**
@@ -118,13 +133,13 @@ export const removeAllListeners = () => {
   );
 };
 
-// ── Internal helper ──────────────────────────────────────────────────────────
+// ── Internal helper ───────────────────────────────────────────────────────────
 
 /**
  * Returns the active socket, connecting first if necessary.
  * @returns {import("socket.io-client").Socket}
  */
 const getSocket = () => {
-  if (!socket?.connected) return connect();
+  if (!socket) return connect();
   return socket;
 };

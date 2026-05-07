@@ -178,15 +178,12 @@ export default {
     },
 
     handleMessageSent(savedMsg) {
-  // Find the index of the last pending message
   const idx = this.messages.findLastIndex((m) => m.pending);
-
   if (idx !== -1) {
-    // Replace the pending message with the real one from the server
-    this.messages[idx] = {
+    this.messages.splice(idx, 1, {
       ...this.normaliseMessage(savedMsg),
-      pending: false // Ensure pending is cleared
-    };
+      pending: false,
+    });
   }
 },
 
