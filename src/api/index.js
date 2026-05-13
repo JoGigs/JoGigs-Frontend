@@ -7,6 +7,9 @@ import axios from "axios";
 const api = axios.create({
   baseURL: "http://localhost:3000/api",
   withCredentials: true,
+  headers: {
+    'ngrok-skip-browser-warning': 'true',
+  },
 });
 
 // ── Response interceptor ─────────────────────────────────────────────────────
@@ -24,6 +27,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         localStorage.removeItem("loggedIn");
+        localStorage.removeItem("user");
         window.location.href = "/login";
         return Promise.reject(refreshError);
       }

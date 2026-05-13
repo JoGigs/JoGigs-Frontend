@@ -17,3 +17,12 @@ export const logout = async () => {
   const response = await api.get("/auth/logout");
   return response.data;
 };
+
+/**
+ * Request a password-reset email.
+ * Backend endpoint: POST /auth/forgot-password
+ */
+export const forgotPassword = async (email) => {
+  const response = await api.post("/auth/forgot-password", { email });
+  return response.data;
+};

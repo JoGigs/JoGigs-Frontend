@@ -37,3 +37,15 @@ export const deleteService = async (serviceId) => {
   return response.data;
 };
 
+/**
+ * Update a service listing (title, description, price, category, location).
+ * Access: Professional Only (own services only).
+ *
+ * @param {number} serviceId
+ * @param {{ title?: string, description?: string, price?: number, category?: string, location?: string }} payload
+ */
+export const updateService = async (serviceId, payload) => {
+  const response = await api.patch(`/services/${serviceId}`, payload);
+  return response.data;
+};
+

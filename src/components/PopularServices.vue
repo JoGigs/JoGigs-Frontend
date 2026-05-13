@@ -2,7 +2,7 @@
     <section class="mb-20">
         <div class="flex items-center justify-between mb-10">
             <div>
-                <h3 class="text-3xl font-extrabold dark:text-white">Popular Services</h3>
+                <h3 class="text-3xl font-extrabold dark:text-white">Browse Services</h3>
                 <p class="text-slate-500 font-medium mt-1">Book a pro in under 2 minutes</p>
             </div>
         </div>
@@ -26,21 +26,18 @@ export default {
     data() {
         return {
             services: [
-                { id: 1, name: 'Plumbing', icon: 'plumbing'},
-                { id: 2, name: 'Electricians', icon: 'bolt'},
-                { id: 3, name: 'Cleaning', icon: 'cleaning_services'},
-                { id: 4, name: 'Garden Care', icon: 'potted_plant'},
-                { id: 5, name: 'Painting', icon: 'format_paint'}
+                { id: 1, name: 'Plumbing',    slug: 'plumbing',   icon: 'plumbing' },
+                { id: 2, name: 'Electrical',   slug: 'electrical', icon: 'bolt' },
+                { id: 3, name: 'Cleaning',     slug: 'cleaning',   icon: 'cleaning_services' },
+                { id: 4, name: 'Garden',       slug: 'garden',     icon: 'potted_plant' },
+                { id: 5, name: 'Painting',     slug: 'painting',   icon: 'format_paint' },
             ]
         }
     },
     methods: {
         selectService(service) {
-  console.log("clicked", service.name)
-  console.log(this.$router)
-  this.$router.push(`/services/${service.name.toLowerCase()}`)
-}
-
+            this.$router.push(`/services/${service.slug}`)
+        }
     }
 }
 </script>

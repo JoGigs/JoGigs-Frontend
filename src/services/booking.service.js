@@ -55,3 +55,28 @@ export const completeBooking = async (bookingId) => {
   const response = await api.patch(`/bookings/${bookingId}/complete`);
   return response.data;
 };
+
+// ── New customer endpoints ────────────────────────────────────────────────────
+
+/**
+ * Cancel a pending booking.
+ * Access: Customer Only (own bookings only).
+ *
+ * @param {number} bookingId
+ */
+export const cancelBooking = async (bookingId) => {
+  const response = await api.patch(`/bookings/${bookingId}/cancel`);
+  return response.data;
+};
+
+/**
+ * Rate a completed booking (1-5).
+ * Access: Customer Only (own bookings only).
+ *
+ * @param {number} bookingId
+ * @param {number} rating 1-5
+ */
+export const rateBooking = async (bookingId, rating) => {
+  const response = await api.post(`/bookings/${bookingId}/rate`, { rating });
+  return response.data;
+};

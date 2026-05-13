@@ -20,3 +20,12 @@ export const updateProfile = async (payload) => {
   const response = await api.patch("/profile", payload);
   return response.data;
 };
+
+/**
+ * Get the average rating for a professional across all services.
+ * @param {number} userId 
+ */
+export const getProfessionalRating = async (userId) => {
+  const response = await api.get(`/profile/${userId}/rating`);
+  return response.data;
+};

@@ -54,12 +54,6 @@
                     </button>
                 </form>
 
-                <!-- Forgot Password -->
-                <div class="mt-6 text-center">
-                    <router-link to="/forgot-password" class="text-sm font-bold text-primary hover:underline">Forgot
-                        your password?</router-link>
-                </div>
-
                 <!-- Sign Up Link -->
                 <p class="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
                     Don't have an account?
@@ -111,7 +105,10 @@ export default {
 
                 console.log("Login success:", data);
                 localStorage.setItem("loggedIn", "true");
-                this.$router.push('/');
+                if (data.user) {
+                    localStorage.setItem("user", JSON.stringify(data.user));
+                }
+                this.$router.push(data.user?.type === 'professional' ? '/dashboard' : '/');
 
 
                 
