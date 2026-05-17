@@ -10,7 +10,7 @@ import api from "../api/index";
  */
 export const createBooking = async (serviceListingId) => {
   const response = await api.post("/bookings", { serviceListingId });
-  return response.data; // Booking object with status "pending"
+  return response.data;
 };
 
 /**

@@ -69,17 +69,19 @@
           <div class="flex flex-col sm:flex-row gap-4">
             <button
               @click="handleBooking"
-              :disabled="isBooking || bookingStatus === 'success'"
+              :disabled="isBooking || bookingStatus === 'success' || hasActiveBooking"
               :class="[
                 'px-8 py-4 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md',
                 bookingStatus === 'success'
                   ? 'bg-green-600 text-white shadow-green-600/30 cursor-default'
-                  : 'bg-primary text-white hover:bg-primary-dark hover:shadow-lg shadow-primary/30'
+                  : hasActiveBooking
+                    ? 'bg-slate-400 text-white cursor-not-allowed'
+                    : 'bg-primary text-white hover:bg-primary-dark hover:shadow-lg shadow-primary/30'
               ]"
             >
               <span v-if="isBooking" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              <span v-else class="material-symbols-outlined text-sm">{{ bookingStatus === 'success' ? 'check_circle' : 'calendar_today' }}</span>
-              {{ isBooking ? 'Booking…' : bookingStatus === 'success' ? 'Booked!' : 'Book Now' }}
+              <span v-else class="material-symbols-outlined text-sm">{{ hasActiveBooking ? 'block' : bookingStatus === 'success' ? 'check_circle' : 'calendar_today' }}</span>
+              {{ isBooking ? 'Booking…' : hasActiveBooking ? 'Already Requested' : bookingStatus === 'success' ? 'Booked!' : 'Book Now' }}
             </button>
             <button
               @click="handleContact"
@@ -93,10 +95,21 @@
         </div>
       </section>
 
-      <!-- Booking notification banner -->
+      <!-- Active booking banner (persistent) -->
+      <div
+        v-if="hasActiveBooking"
+        class="mb-8 flex items-center justify-between gap-4 px-6 py-4 rounded-2xl border text-sm font-medium bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300"
+      >
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-xl">info</span>
+          {{ activeBookingMessage }}
+        </div>
+      </div>
+
+      <!-- Booking result banner (dismissible) -->
       <transition name="slide-down">
         <div
-          v-if="bookingStatus"
+          v-if="!hasActiveBooking && bookingStatus"
           :class="[
             'mb-8 flex items-center justify-between gap-4 px-6 py-4 rounded-2xl border text-sm font-medium',
             bookingStatus === 'success'
@@ -139,27 +152,29 @@ export default {
   name: 'ServiceDetails',
   components: { Header },
 
-  data() {
-    return {
-      isBooking: false,
-      bookingStatus: null,
-      bookingMessage: '',
-      serviceListingId: null,
-      professionalUserId: null,
+      data() {
+        return {
+          isBooking: false,
+          bookingStatus: null,
+          bookingMessage: '',
+          hasActiveBooking: false,
+          activeBookingMessage: '',
+          serviceListingId: null,
+          professionalUserId: null,
 
-      provider: {
-        name: '',
-        location: '',
-        serviceLocation: '',
-        specialty: '',
-        bio: '',
-        price: null,
-        rating: null,
-        phone: '',
+          provider: {
+            name: '',
+            location: '',
+            serviceLocation: '',
+            specialty: '',
+            bio: '',
+            price: null,
+            rating: null,
+            phone: '',
+          },
+          copySuccess: false,
+        };
       },
-      copySuccess: false,
-    };
-  },
 
   async mounted() {
     const id = Number(this.$route.params.id);
@@ -192,8 +207,8 @@ export default {
             const activeBooking = bookings.find(b => b.serviceListing?.id === id && (b.status === 'pending' || b.status === 'accepted'));
             
             if (activeBooking) {
-              this.bookingStatus = 'success';
-              this.bookingMessage = 'You already have an active request for this service.';
+              this.hasActiveBooking = true;
+              this.activeBookingMessage = 'You already have an active request for this service.';
             }
           } catch (e) {
             console.error('Failed to load existing bookings', e);

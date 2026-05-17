@@ -114,7 +114,7 @@ export default {
     async fetchRating() {
       try {
         const rating = await getProfessionalRating(this.user.id);
-        console.log('Fetched Professional Rating:', rating);
+
         this.overallRating = rating;
       } catch (err) {
         console.error('Failed to fetch rating:', err);

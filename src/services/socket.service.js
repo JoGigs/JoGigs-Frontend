@@ -18,14 +18,6 @@ export const connect = (forceNew = false) => {
         reconnectionDelay: 2000,
     });
 
-    socket.on('connect', () => {
-        console.log('[Socket] Connected with ID:', socket.id);
-    });
-
-    socket.on('disconnect', (reason) => {
-        console.log('[Socket] Disconnected:', reason);
-    });
-
     return socket;
 };
 
