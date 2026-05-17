@@ -69,19 +69,17 @@
           <div class="flex flex-col sm:flex-row gap-4">
             <button
               @click="handleBooking"
-              :disabled="isBooking || bookingStatus === 'success' || hasActiveBooking"
+              :disabled="isBooking || hasActiveBooking"
               :class="[
                 'px-8 py-4 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md',
-                bookingStatus === 'success'
-                  ? 'bg-green-600 text-white shadow-green-600/30 cursor-default'
-                  : hasActiveBooking
-                    ? 'bg-slate-400 text-white cursor-not-allowed'
-                    : 'bg-primary text-white hover:bg-primary-dark hover:shadow-lg shadow-primary/30'
+                hasActiveBooking
+                  ? 'bg-slate-400 text-white cursor-not-allowed'
+                  : 'bg-primary text-white hover:bg-primary-dark hover:shadow-lg shadow-primary/30'
               ]"
             >
               <span v-if="isBooking" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              <span v-else class="material-symbols-outlined text-sm">{{ hasActiveBooking ? 'block' : bookingStatus === 'success' ? 'check_circle' : 'calendar_today' }}</span>
-              {{ isBooking ? 'Booking…' : hasActiveBooking ? 'Already Requested' : bookingStatus === 'success' ? 'Booked!' : 'Book Now' }}
+              <span v-else class="material-symbols-outlined text-sm">{{ hasActiveBooking ? 'block' : 'calendar_today' }}</span>
+              {{ isBooking ? 'Booking…' : hasActiveBooking ? 'Already Requested' : 'Book Now' }}
             </button>
             <button
               @click="handleContact"
@@ -106,22 +104,17 @@
         </div>
       </div>
 
-      <!-- Booking result banner (dismissible) -->
+      <!-- Error banner (transient) -->
       <transition name="slide-down">
         <div
-          v-if="!hasActiveBooking && bookingStatus"
-          :class="[
-            'mb-8 flex items-center justify-between gap-4 px-6 py-4 rounded-2xl border text-sm font-medium',
-            bookingStatus === 'success'
-              ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300'
-              : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300'
-          ]"
+          v-if="bookingError"
+          class="mb-8 flex items-center justify-between gap-4 px-6 py-4 rounded-2xl border text-sm font-medium bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300"
         >
           <div class="flex items-center gap-3">
-            <span class="material-symbols-outlined text-xl">{{ bookingStatus === 'success' ? 'check_circle' : 'error' }}</span>
-            {{ bookingMessage }}
+            <span class="material-symbols-outlined text-xl">error</span>
+            {{ bookingError }}
           </div>
-          <button @click="dismissNotification" class="opacity-60 hover:opacity-100 transition-opacity">
+          <button @click="bookingError = null" class="opacity-60 hover:opacity-100 transition-opacity">
             <span class="material-symbols-outlined text-base">close</span>
           </button>
         </div>
@@ -155,8 +148,7 @@ export default {
       data() {
         return {
           isBooking: false,
-          bookingStatus: null,
-          bookingMessage: '',
+          bookingError: null,
           hasActiveBooking: false,
           activeBookingMessage: '',
           serviceListingId: null,
@@ -239,23 +231,21 @@ export default {
         return this.$router.push('/login');
       }
 
-      if (this.isBooking || this.bookingStatus === 'success') return;
+      if (this.isBooking || this.hasActiveBooking) return;
 
-      this.isBooking      = true;
-      this.bookingStatus  = null;
-      this.bookingMessage = '';
+      this.isBooking    = true;
+      this.bookingError = null;
 
       try {
         await createBooking(this.serviceListingId);
-        this.bookingStatus  = 'success';
-        this.bookingMessage = 'Booking request sent! The provider will confirm shortly.';
+        this.hasActiveBooking    = true;
+        this.activeBookingMessage = 'Booking request sent! The provider will confirm shortly.';
       } catch (err) {
         const status = err.response?.status;
         if (status === 401) {
           this.$router.push('/login');
         } else {
-          this.bookingStatus  = 'error';
-          this.bookingMessage = 'Something went wrong. Please try again.';
+          this.bookingError = 'Something went wrong. Please try again.';
         }
       } finally {
         this.isBooking = false;
@@ -275,10 +265,6 @@ export default {
       });
     },
 
-    dismissNotification() {
-      this.bookingStatus  = null;
-      this.bookingMessage = '';
-    },
   },
 };
 </script>
