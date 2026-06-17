@@ -76,7 +76,20 @@ export const cancelBooking = async (bookingId) => {
  * @param {number} bookingId
  * @param {number} rating 1-5
  */
-export const rateBooking = async (bookingId, rating) => {
-  const response = await api.post(`/bookings/${bookingId}/rate`, { rating });
+export const rateBooking = async (bookingId, rating, comment) => {
+  const payload = { rating };
+  if (comment) payload.comment = comment;
+  const response = await api.post(`/bookings/${bookingId}/rate`, payload);
   return response.data;
+};
+
+/**
+ * Get all public comments/reviews for a service listing.
+ * Access: Public.
+ *
+ * @param {number} serviceId
+ */
+export const getServiceComments = async (serviceId) => {
+  const response = await api.get(`/bookings/service/${serviceId}/comments`);
+  return response.data; // Booking[] with customer relation
 };

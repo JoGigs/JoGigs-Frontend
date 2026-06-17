@@ -49,3 +49,8 @@ export const updateService = async (serviceId, payload) => {
   return response.data;
 };
 
+export const toggleDisableService = async (serviceId) => {
+  const response = await api.patch(`/services/${serviceId}/toggle-disable`);
+  return response.data;
+};
+

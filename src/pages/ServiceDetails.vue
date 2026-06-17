@@ -69,17 +69,17 @@
           <div class="flex flex-col sm:flex-row gap-4">
             <button
               @click="handleBooking"
-              :disabled="isBooking || hasActiveBooking"
+              :disabled="isBooking || hasActiveBooking || isDisabled"
               :class="[
                 'px-8 py-4 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md',
-                hasActiveBooking
+                hasActiveBooking || isDisabled
                   ? 'bg-slate-400 text-white cursor-not-allowed'
                   : 'bg-primary text-white hover:bg-primary-dark hover:shadow-lg shadow-primary/30'
               ]"
             >
               <span v-if="isBooking" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-              <span v-else class="material-symbols-outlined text-sm">{{ hasActiveBooking ? 'block' : 'calendar_today' }}</span>
-              {{ isBooking ? 'Booking…' : hasActiveBooking ? 'Already Requested' : 'Book Now' }}
+              <span v-else class="material-symbols-outlined text-sm">{{ hasActiveBooking ? 'block' : isDisabled ? 'block' : 'calendar_today' }}</span>
+              {{ isBooking ? 'Booking…' : hasActiveBooking ? 'Already Requested' : isDisabled ? 'Not Available' : 'Book Now' }}
             </button>
             <button
               @click="handleContact"
@@ -92,6 +92,17 @@
           </div>
         </div>
       </section>
+
+      <!-- Disabled service banner -->
+      <div
+        v-if="isDisabled"
+        class="mb-8 flex items-center justify-between gap-4 px-6 py-4 rounded-2xl border text-sm font-medium bg-slate-100 border-slate-300 text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400"
+      >
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-xl">block</span>
+          This service is currently disabled and unavailable for booking.
+        </div>
+      </div>
 
       <!-- Active booking banner (persistent) -->
       <div
@@ -130,6 +141,35 @@
             {{ provider.bio }}
           </p>
         </div>
+
+        <!-- Comments / Reviews -->
+        <div v-if="comments.length > 0" class="space-y-6">
+          <h2 class="text-[10px] font-black tracking-widest uppercase text-slate-500 dark:text-slate-400">
+            Reviews ({{ comments.length }})
+          </h2>
+          <div class="space-y-4">
+            <div v-for="c in comments" :key="c.id"
+              class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
+                    {{ (c.customer?.fullName || 'A')[0] }}
+                  </div>
+                  <div>
+                    <p class="font-bold text-sm text-slate-900 dark:text-white">{{ c.customer?.fullName || 'Anonymous' }}</p>
+                    <p class="text-[10px] text-slate-400">{{ formatDate(c.createdAt) }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-0.5 text-amber-500">
+                  <span v-for="n in 5" :key="n" class="material-symbols-outlined text-sm" :class="n <= c.customerRating ? '' : 'text-slate-200'">star</span>
+                </div>
+              </div>
+              <p v-if="c.comment" class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                {{ c.comment }}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
     </main>
@@ -139,7 +179,7 @@
 <script>
 import Header from '../components/Header.vue';
 import { getAllServices } from '../services/serviceListing.service';
-import { createBooking, getMyBookings } from '../services/booking.service';
+import { createBooking, getMyBookings, getServiceComments } from '../services/booking.service';
 
 export default {
   name: 'ServiceDetails',
@@ -147,12 +187,15 @@ export default {
 
       data() {
         return {
+          isDisabled: false,
           isBooking: false,
           bookingError: null,
           hasActiveBooking: false,
           activeBookingMessage: '',
           serviceListingId: null,
           professionalUserId: null,
+
+          comments: [],
 
           provider: {
             name: '',
@@ -188,6 +231,7 @@ export default {
         this.provider.price          = match.price || '—';
         this.provider.rating         = match.rating || 0;
         this.provider.phone          = pro.phone || 'No phone provided';
+        this.isDisabled              = match.isDisabled || false;
       }
 
       // Check if user already has an active booking for this service
@@ -206,6 +250,12 @@ export default {
             console.error('Failed to load existing bookings', e);
           }
         }
+      }
+      // Load comments for this service
+      try {
+        this.comments = await getServiceComments(id);
+      } catch (e) {
+        console.error('Failed to load comments', e);
       }
     } catch (err) {
       console.error('[ServiceDetails] Failed to load service:', err);
@@ -250,6 +300,13 @@ export default {
       } finally {
         this.isBooking = false;
       }
+    },
+
+    formatDate(dateStr) {
+      if (!dateStr) return '';
+      return new Date(dateStr).toLocaleDateString('en-GB', {
+        day: 'numeric', month: 'short', year: 'numeric'
+      });
     },
 
     handleContact() {

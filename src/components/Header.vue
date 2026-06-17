@@ -11,19 +11,40 @@
       </router-link>
 
       <!-- Navigation (desktop) -->
-      <nav class="hidden md:flex items-center gap-8">
+      <nav class="hidden md:flex items-center gap-6">
         <template v-if="isLoggedIn">
           <template v-if="isProfessional">
-            <router-link to="/dashboard" class="text-sm font-bold text-slate-600 hover:text-primary transition-all">Service Management</router-link>
+            <router-link to="/dashboard" class="flex items-center gap-2 text-sm font-bold transition-all" :class="navActive('/dashboard') ? 'text-primary' : 'text-slate-600 hover:text-primary'">
+              <span class="material-symbols-outlined text-lg" :style="navFill('/dashboard')">dashboard</span> Service Management
+            </router-link>
           </template>
           <template v-else>
-            <router-link to="/" class="text-sm font-bold text-slate-600 hover:text-primary transition-all">Home</router-link>
-            <router-link to="/dashboard" class="text-sm font-bold text-slate-600 hover:text-primary transition-all">Dashboard</router-link>
+            <router-link to="/" class="flex items-center gap-2 text-sm font-bold transition-all" :class="navActive('/') ? 'text-primary' : 'text-slate-600 hover:text-primary'">
+              <span class="material-symbols-outlined text-lg" :style="navFill('/')">home</span> Home
+            </router-link>
+            <router-link to="/dashboard" class="flex items-center gap-2 text-sm font-bold transition-all" :class="navActive('/dashboard') ? 'text-primary' : 'text-slate-600 hover:text-primary'">
+              <span class="material-symbols-outlined text-lg" :style="navFill('/dashboard')">grid_view</span> Dashboard
+            </router-link>
           </template>
-          <router-link to="/profile" class="text-sm font-bold text-slate-600 hover:text-primary transition-all">Profile</router-link>
+          <router-link to="/profile"
+            class="flex items-center gap-2 group/profile"
+            :title="userName">
+            <div class="relative">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-sm transition-all duration-200"
+                :class="navActive('/profile')
+                  ? 'bg-gradient-to-br from-primary to-primary/70 text-white shadow-md shadow-primary/20'
+                  : 'border-2 border-slate-200 text-slate-400 hover:border-primary hover:text-primary group-hover/profile:scale-105'">
+                {{ userInitial }}
+              </div>
+            </div>
+            <span class="text-sm font-bold transition-colors hidden lg:block"
+              :class="navActive('/profile') ? 'text-primary' : 'text-slate-500 group-hover/profile:text-primary'">{{ userName }}</span>
+          </router-link>
         </template>
         <template v-else>
-          <router-link to="/" class="text-sm font-bold text-slate-600 hover:text-primary transition-all">Home</router-link>
+          <router-link to="/" class="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-primary transition-all">
+            <span class="material-symbols-outlined text-lg">home</span> Home
+          </router-link>
         </template>
       </nav>
 
@@ -153,24 +174,39 @@
 
         <template v-else>
           <button @click="handleLogout"
-            class="border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-5 py-2.5 rounded-full font-bold text-sm hover:border-primary hover:text-primary transition-all">Logout</button>
+            class="flex items-center gap-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-5 py-2.5 rounded-full font-bold text-sm hover:border-primary hover:text-primary transition-all">
+            <span class="material-symbols-outlined text-lg">logout</span> Logout
+          </button>
         </template>
       </div>
 
     </div>
 
-    <!-- Mobile menu dropdown -->
-    <div v-if="showMobileMenu && isLoggedIn"
-      class="md:hidden border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-background-dark px-6 py-4 flex flex-col gap-3">
-      <template v-if="isProfessional">
-        <router-link to="/dashboard" @click="showMobileMenu = false" class="text-sm font-bold text-slate-600 hover:text-primary transition-all">Service Management</router-link>
-      </template>
-      <template v-else>
-        <router-link to="/" @click="showMobileMenu = false" class="text-sm font-bold text-slate-600 hover:text-primary transition-all">Home</router-link>
-        <router-link to="/dashboard" @click="showMobileMenu = false" class="text-sm font-bold text-slate-600 hover:text-primary transition-all">Dashboard</router-link>
-      </template>
-      <router-link to="/profile" @click="showMobileMenu = false" class="text-sm font-bold text-slate-600 hover:text-primary transition-all">Profile</router-link>
-    </div>
+      <!-- Mobile menu dropdown -->
+      <div v-if="showMobileMenu && isLoggedIn"
+        class="md:hidden border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-background-dark px-6 py-4 flex flex-col gap-3">
+        <template v-if="isProfessional">
+          <router-link to="/dashboard" @click="showMobileMenu = false" class="flex items-center gap-3 text-sm font-bold text-slate-600 hover:text-primary transition-all">
+            <span class="material-symbols-outlined text-lg">dashboard</span> Service Management
+          </router-link>
+        </template>
+        <template v-else>
+          <router-link to="/" @click="showMobileMenu = false" class="flex items-center gap-3 text-sm font-bold text-slate-600 hover:text-primary transition-all">
+            <span class="material-symbols-outlined text-lg">home</span> Home
+          </router-link>
+          <router-link to="/dashboard" @click="showMobileMenu = false" class="flex items-center gap-3 text-sm font-bold text-slate-600 hover:text-primary transition-all">
+            <span class="material-symbols-outlined text-lg">grid_view</span> Dashboard
+          </router-link>
+        </template>
+        <router-link to="/profile" @click="showMobileMenu = false" class="flex items-center gap-3 text-sm font-bold text-slate-600 hover:text-primary transition-all">
+          <span class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">{{ userInitial }}</span>
+          My Profile
+        </router-link>
+        <button @click="handleLogout; showMobileMenu = false" class="flex items-center gap-3 text-sm font-bold text-red-500 hover:text-red-600 transition-all">
+          <span class="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center"><span class="material-symbols-outlined text-lg">logout</span></span>
+          Logout
+        </button>
+      </div>
   </header>
 </template>
 
@@ -194,6 +230,18 @@ export default {
   },
 
   computed: {
+    userName() {
+      try {
+        return JSON.parse(localStorage.getItem('user') || '{}').fullName || '';
+      } catch { return ''; }
+    },
+    userInitial() {
+      const name = this.userName;
+      if (!name) return '?';
+      const parts = name.trim().split(/\s+/);
+      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+      return name.charAt(0).toUpperCase();
+    },
     isProfessional() {
       try {
         return JSON.parse(localStorage.getItem('user') || '{}').type === 'professional';
@@ -343,6 +391,12 @@ export default {
       }
     },
 
+    navActive(path) {
+      return this.$route.path === path;
+    },
+    navFill(path) {
+      return { fontVariationSettings: this.$route.path === path ? "'FILL' 1" : "'FILL' 0" };
+    },
     getInitial(name) {
       return name ? name.charAt(0).toUpperCase() : '?';
     },

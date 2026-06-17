@@ -9,9 +9,9 @@
           {{ category }}
         </h1>
 
-        <p v-if="!loading" class="text-slate-400 font-medium">
-          Browse {{ filteredServices.length }} available {{ category }} services
-        </p>
+      <p v-if="!loading" class="text-slate-400 font-medium">
+        Browse {{ activeCount }} of {{ filteredServices.length }} {{ category }} services
+      </p>
       </div>
 
       <div v-if="!loading" class="mb-8">
@@ -52,6 +52,7 @@
           :rating="service.rating"
           :price="service.price"
           :location="service.location"
+          :disabled="service.isDisabled"
         />
       </div>
 
@@ -84,6 +85,9 @@ export default {
   computed: {
     category() {
       return this.$route.params.category;
+    },
+    activeCount() {
+      return this.filteredServices.filter(s => !s.isDisabled).length;
     },
     filteredServices() {
       let result = this.services;

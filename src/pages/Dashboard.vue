@@ -46,12 +46,16 @@
             </div>
 
             <div v-for="svc in myServices" :key="svc.id"
-              class="bg-white p-5 rounded-xl border border-slate-100 shadow-sm">
+              class="p-5 rounded-xl border shadow-sm transition-all"
+              :class="svc.isDisabled ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-slate-100'">
               <!-- View mode -->
               <template v-if="editingServiceId !== svc.id">
                 <div class="flex flex-col md:flex-row md:items-center gap-4">
                   <div class="flex-1 min-w-0">
-                    <h3 class="font-bold text-slate-900">{{ svc.title }}</h3>
+                    <h3 class="font-bold text-slate-900">
+                      {{ svc.title }}
+                      <span v-if="svc.isDisabled" class="bg-slate-200 text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Disabled</span>
+                    </h3>
                     <p class="text-sm text-slate-500 truncate">{{ svc.description }}</p>
                     <div class="flex items-center gap-3 mt-2">
                       <span class="text-sm font-bold text-primary">JOD {{ svc.price }}</span>
@@ -66,6 +70,11 @@
                     </div>
                   </div>
                   <div class="flex gap-2 flex-shrink-0">
+                    <button @click="handleToggleDisable(svc.id)"
+                      class="px-4 py-2 rounded-lg font-bold text-[11px] uppercase tracking-wider transition-all active:scale-95"
+                      :class="svc.isDisabled ? 'bg-green-500 text-white border-green-500 hover:bg-green-600' : 'border border-slate-200 text-slate-600 hover:border-amber-500 hover:text-amber-500'">{{ svc.isDisabled ? 'Enable' : 'Disable' }}</button>
+                    <button @click="viewReviews(svc)"
+                      class="border border-slate-200 text-amber-600 px-4 py-2 rounded-lg font-bold text-[11px] uppercase tracking-wider hover:border-amber-400 hover:bg-amber-50 transition-all active:scale-95">Reviews</button>
                     <button @click="startEdit(svc)"
                       class="border border-slate-200 text-slate-600 px-4 py-2 rounded-lg font-bold text-[11px] uppercase tracking-wider hover:border-primary hover:text-primary transition-all active:scale-95">Edit</button>
                     <button @click="handleDeleteService(svc.id)"
@@ -273,7 +282,7 @@
           @click.self="showRateModal = false">
           <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
             <h3 class="text-xl font-bold text-slate-900 mb-4">Rate Your Experience</h3>
-            <div class="flex justify-center gap-2 mb-6">
+            <div class="flex justify-center gap-2 mb-4">
               <button v-for="n in 5" :key="n"
                 @click="rateValue = n"
                 :class="['w-12 h-12 rounded-full text-2xl font-bold transition-all',
@@ -281,6 +290,9 @@
                 {{ n }}
               </button>
             </div>
+            <textarea v-model="rateComment" rows="3"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm resize-none mb-4"
+              placeholder="Leave a comment (optional)..."></textarea>
             <div class="flex gap-3">
               <button @click="showRateModal = false"
                 class="flex-1 border border-slate-200 text-slate-600 py-3 rounded-xl font-bold text-sm">Cancel</button>
@@ -294,6 +306,45 @@
 
         <UserDetailModal :user="selectedUser" :isOpen="showProfileModal" @close="showProfileModal = false" />
 
+        <!-- Reviews Modal -->
+        <div v-if="showReviewsModal"
+          class="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+          @click.self="showReviewsModal = false">
+          <div class="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl max-h-[80vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-xl font-bold text-slate-900">Reviews: {{ reviewsServiceTitle }}</h3>
+              <button @click="showReviewsModal = false" class="text-slate-400 hover:text-slate-600 transition-all">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div v-if="serviceReviews.length === 0" class="text-center py-8 text-slate-400">
+              No reviews yet for this service.
+            </div>
+
+            <div v-else class="space-y-4">
+              <div v-for="r in serviceReviews" :key="r.id"
+                class="p-4 rounded-xl border border-slate-100">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+                      {{ (r.customer?.fullName || 'A')[0] }}
+                    </div>
+                    <div>
+                      <p class="font-bold text-sm text-slate-900">{{ r.customer?.fullName || 'Anonymous' }}</p>
+                      <p class="text-[10px] text-slate-400">{{ formatDate(r.createdAt) }}</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-0.5 text-amber-500">
+                    <span v-for="n in 5" :key="n" class="material-symbols-outlined text-sm" :class="n <= r.customerRating ? '' : 'text-slate-200'">star</span>
+                  </div>
+                </div>
+                <p v-if="r.comment" class="text-slate-600 text-sm leading-relaxed">{{ r.comment }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </template>
     </main>
   </div>
@@ -302,8 +353,8 @@
 <script>
 import Header from '../components/Header.vue';
 import UserDetailModal from '../components/UserDetailModal.vue';
-import { getMyBookings, getMyJobs, respondToBooking, completeBooking, cancelBooking, rateBooking } from '../services/booking.service';
-import { getMyServices, deleteService, updateService } from '../services/serviceListing.service';
+import { getMyBookings, getMyJobs, respondToBooking, completeBooking, cancelBooking, rateBooking, getServiceComments } from '../services/booking.service';
+import { getMyServices, deleteService, updateService, toggleDisableService } from '../services/serviceListing.service';
 import { getMyProfile } from '../services/profile.service';
 import { onBookingUpdate } from '../services/notification.service';
 
@@ -328,10 +379,14 @@ export default {
       showRateModal: false,
       rateBookingId: null,
       rateValue: 5,
+      rateComment: '',
       rateSubmitting: false,
       showProfileModal: false,
       selectedUser: null,
       highlightedId: null,
+      showReviewsModal: false,
+      reviewsServiceTitle: '',
+      serviceReviews: [],
     };
   },
   async mounted() {
@@ -403,6 +458,27 @@ export default {
       }
     },
 
+    async viewReviews(svc) {
+      this.reviewsServiceTitle = svc.title;
+      this.serviceReviews = [];
+      this.showReviewsModal = true;
+      try {
+        this.serviceReviews = await getServiceComments(svc.id);
+      } catch (err) {
+        console.error('Failed to load reviews', err);
+      }
+    },
+
+    async handleToggleDisable(serviceId) {
+      try {
+        const updated = await toggleDisableService(serviceId);
+        const idx = this.myServices.findIndex(s => s.id === serviceId);
+        if (idx !== -1) this.myServices[idx] = updated;
+      } catch (err) {
+        alert('Could not update service status.');
+      }
+    },
+
     async handleDeleteService(id) {
       if (!confirm('Delete this service listing permanently?')) return;
       try {
@@ -450,6 +526,7 @@ export default {
     openRateModal(bookingId) {
       this.rateBookingId = bookingId;
       this.rateValue = 5;
+      this.rateComment = '';
       this.showRateModal = true;
     },
 
@@ -457,7 +534,7 @@ export default {
       if (!this.rateBookingId) return;
       this.rateSubmitting = true;
       try {
-        await rateBooking(this.rateBookingId, this.rateValue);
+        await rateBooking(this.rateBookingId, this.rateValue, this.rateComment);
         this.showRateModal = false;
         this.rateBookingId = null;
         await this.loadDashboardData(true);

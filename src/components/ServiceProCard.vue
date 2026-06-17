@@ -5,11 +5,13 @@
            hover:border-primary/20 transition-all duration-300
            flex flex-col md:flex-row gap-8 items-start md:items-center
            shadow-sm hover:shadow-md mb-4"
+    :class="{ 'opacity-60 bg-slate-50': disabled }"
   >
     <div class="flex-1">
       <div class="flex flex-wrap items-center gap-3 mb-3">
         <h3 class="text-lg font-bold text-slate-900 dark:text-white">
           {{ title }}
+          <span v-if="disabled" class="bg-slate-300 text-slate-600 text-[9px] font-bold px-2 py-0.5 rounded uppercase ml-2">Disabled</span>
         </h3>
       </div>
 
@@ -53,7 +55,8 @@ export default {
     rating:      { type: Number, default: 0 },
     price:       { type: Number, default: 0 },
     location:    { type: String, default: '' },
-    serviceId:   { type: Number, required: true }, 
+    serviceId:   { type: Number, required: true },
+    disabled:    { type: Boolean, default: false },
   },
   methods: {
     viewProfile() {
