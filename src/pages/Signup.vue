@@ -68,7 +68,7 @@
                             class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                             required />
                         <span v-if="errors.password" class="text-red-500 text-xs mt-1">{{ errors.password }}</span>
-                        <p class="text-xs text-slate-500 mt-1">At least 8 characters</p>
+                        <p class="text-xs text-slate-500 mt-1">At least 6 characters</p>
                     </div>
 
                     <!-- Confirm Password -->
@@ -145,7 +145,11 @@ export default {
     async handleSignup() {
       // 1. Reset error messages
       this.errors = { fullName: '', email: '', phone: '', password: '', confirmPassword: '' };
-
+     
+      if (this.form.password.length < 6) {
+        this.errors.password = 'Password must be at least 6 characters long';
+        return;
+      }
       // 2. Client-side Validation
       if (this.form.password !== this.form.confirmPassword) {
         this.errors.confirmPassword = 'Passwords do not match';
